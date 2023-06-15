@@ -68,10 +68,21 @@ class JibriPal {
         Loader.load(avcodec::class.java)
 
         playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
-        startListeningAudio()
-        val executorService = Executors.newFixedThreadPool(2)
+        val executorService = Executors.newFixedThreadPool(3)
 
         try {
+            executorService.submit {
+                try {
+                    println("pal start listening audio")
+                    startListeningAudio()
+                    println("pal start listening done")
+
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                    keepWorking.set(false)
+                }
+            }
+
             executorService.submit {
                 try {
                     inputContext = AVFormatContext(null)
@@ -330,7 +341,7 @@ class JibriPal {
         try {
             fsh = File.createTempFile("script", ".sh")
 
-            val command = "#!/bin/sh\n/usr/bin/ffmpeg -f pulse -i default -f flv " + RTMP_SERVER_URL + " &\n"
+            val command = "#!/bin/sh\n/usr/bin/ffmpeg -f pulse -i default -f flv " + RTMP_SERVER_URL + "\n"
 
             FileUtils.write(
                 fsh,
