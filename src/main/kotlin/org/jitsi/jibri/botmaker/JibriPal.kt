@@ -55,28 +55,23 @@ class JibriPal {
     private var inputContext: AVFormatContext? = null
     private var sharedSourceDataLine: SourceDataLine? = null
     private val keepWorking = AtomicBoolean(true)
-    private val pendingBytes: BlockingQueue<ByteString> = LinkedBlockingQueue(50)
+    private val pendingBytes: BlockingQueue<ByteString> = LinkedBlockingQueue(10_000)
 
-    val startTime = System.currentTimeMillis()
+    // val startTime = System.currentTimeMillis()
 //    private val transcription = StringBuffer(500)
 
     fun startService(languageCode: String) {
         LoadBalancerRegistry.getDefaultRegistry().register(PickFirstLoadBalancerProvider())
-
-        println("pal STARTED")
-
         Loader.load(avcodec::class.java)
 
-        playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
+        // playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
         val executorService = Executors.newFixedThreadPool(3)
 
         try {
             executorService.submit {
                 try {
-                    println("pal start listening audio")
                     startListeningAudio()
-                    println("pal start listening done")
-
+                    println("*** [PAL] startListeningAudio done")
                 } catch (e: java.lang.Exception) {
                     e.printStackTrace()
                     keepWorking.set(false)
@@ -86,17 +81,15 @@ class JibriPal {
             executorService.submit {
                 try {
                     inputContext = AVFormatContext(null)
-                    println("pal audioin 1")
+
                     val ret: Int = avformat.avformat_open_input(inputContext, RTMP_SERVER_URL, null, null)
-                    println("pal audioin 2")
+
                     if (ret < 0) {
                         throw java.lang.RuntimeException("Error opening input stream.")
                     }
-                    println("pal audioin 3")
+
                     val audioFormat = AudioFormat(44000.0f, 16, 1, true, false)
-                    println("pal audioin 4")
                     val info = DataLine.Info(SourceDataLine::class.java, audioFormat)
-                    println("pal audioin 5")
 
                     val sourceDataLine: SourceDataLine = AudioSystem.getLine(info) as SourceDataLine
                     sharedSourceDataLine = sourceDataLine
@@ -104,18 +97,16 @@ class JibriPal {
                     sourceDataLine.open(audioFormat)
                     sourceDataLine.start()
 
-                    println("pal audioin 6")
-
                     val pkt = AVPacket()
                     //                final byte[] buffer = new byte[4096];
-                    println("pal Listening audio started in [" + (System.currentTimeMillis() - startTime) + "]")
+                    println("*** [PAL] Listening audio started")
+
                     while (keepWorking.get() && avformat.av_read_frame(inputContext, pkt) >= 0) {
                         val data = pkt.data()
                         val size = pkt.size()
                         val audioBuffer = data.position(0).limit(size.toLong()).asBuffer()
                         //                audioBuffer.get(buffer, 0, size);
                         pendingBytes.add(ByteString.copyFrom(audioBuffer))
-                        println("pal audioin bytes added")
 
 //                sourceDataLine.write(buffer, 0, size);
                         avcodec.av_packet_unref(pkt)
@@ -130,7 +121,7 @@ class JibriPal {
                     SpeechClient.create().use { client ->
                         val clientStream = client
                             .streamingRecognizeCallable()
-                            .splitCall(TranscriptionObserver(this))
+                            .splitCall(TranscriptionObserver())
 
                         clientStream.send(
                             StreamingRecognizeRequest.newBuilder()
@@ -159,7 +150,7 @@ class JibriPal {
                                 // ok to ignore
                             }
                             if (audioBytes != null) {
-                                println("pal trans sent")
+                                println("*** [PAL] GOOGLE sent")
                                 clientStream.send(
                                     StreamingRecognizeRequest.newBuilder().setAudioContent(audioBytes).build()
                                 )
@@ -172,18 +163,6 @@ class JibriPal {
                     keepWorking.set(false)
                 }
             }
-
-//             waiting till works
-//            while (keepWorking.get()) {
-//                try {
-//                    ThreadUtils.sleep(loopLongWait)
-//                } catch (interruptedException: InterruptedException) {
-//                    // ok to ignore
-//                }
-//            }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-            throw java.lang.RuntimeException(e)
         } finally {
             stopWorking()
             try {
@@ -191,7 +170,7 @@ class JibriPal {
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
-            println("pal working finished")
+            println("*** [PAL] working finished")
         }
     }
 
@@ -225,12 +204,10 @@ class JibriPal {
         }
     }
 
-    private class TranscriptionObserver(jp: JibriPal) : ResponseObserver<StreamingRecognizeResponse?> {
-
-        private var jibriPal: JibriPal = jp
+    private class TranscriptionObserver : ResponseObserver<StreamingRecognizeResponse?> {
 
         override fun onStart(controller: StreamController) {
-            println("pal Transcription started in [" + (System.currentTimeMillis() - jibriPal.startTime) + "]")
+            println("*** [PAL] Transcription started")
         }
 
         override fun onResponse(response: StreamingRecognizeResponse?) {
@@ -248,7 +225,7 @@ class JibriPal {
                 .findFirst()
                 .orElse(null) ?: return
 
-            println("pal Transcript [$bestTranscript]")
+            println("*** [PAL] Transcript [$bestTranscript]")
 //            transcription.append(bestTranscript)
 
             asyncHttpClient
@@ -265,7 +242,7 @@ class JibriPal {
                 .execute(object : AsyncCompletionHandler<Any>() {
                     override fun onCompleted(response: Response): Any {
                         try {
-                            println("pal response [$response.responseBody]")
+                            println("*** [PAL] response [$response.responseBody]")
 
 //                            val payload = GSON.fromJson(response.responseBody, MutableMap::class.java)
 //                            val response1 = (payload["response"] as List<Map<String?, Any?>>?)!![0]
@@ -336,32 +313,10 @@ class JibriPal {
     }
 
     private fun startListeningAudio() {
-        var fsh: File? = null
-
         try {
-            fsh = File.createTempFile("script", ".sh")
-
-            val command = "#!/bin/sh\n/usr/bin/ffmpeg -f pulse -i default -f flv " + RTMP_SERVER_URL + "\n"
-
-            FileUtils.write(
-                fsh,
-                command,
-                StandardCharsets.UTF_8
-            )
-
-            executeCmd(arrayOf("chmod", "+x", fsh.getAbsolutePath()))
-
-            executeCmd(arrayOf(fsh.getAbsolutePath()))
+            executeCmd(arrayOf("/usr/bin/ffmpeg", "-f", "pulse", "-i", "default", "-f", "flv", RTMP_SERVER_URL))
         } catch (e: Exception) {
             e.printStackTrace()
-        } finally {
-            if (fsh != null) {
-                try {
-                    fsh.delete()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
         }
     }
 
@@ -369,7 +324,7 @@ class JibriPal {
         var process: Process? = null
 
         try {
-            println("pal executing [" + java.lang.String.join(" ", *c) + "]")
+            println("*** [PAL] executing [" + java.lang.String.join(" ", *c) + "]")
             val processBuilder = ProcessBuilder(*c)
 
             process = processBuilder.start()
