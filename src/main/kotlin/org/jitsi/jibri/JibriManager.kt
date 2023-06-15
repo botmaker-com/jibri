@@ -146,7 +146,7 @@ class JibriManager : StatusPublisher<Any>() {
         throwIfBusy()
         logger.info("Starting a file recording with params: $fileRecordingRequestParams")
 
-        JibriPal().startService("en-US");
+        JibriPal().startService("en-US")
 
         val service = FileRecordingJibriService(
             FileRecordingParams(

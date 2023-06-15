@@ -40,6 +40,12 @@ import javax.sound.sampled.SourceDataLine
 class JibriPal {
 
     companion object {
+        private val ACCESS_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJidXNpbmVzc0lkIjoiYm90bWFrZXJ2b2ljZWRl" +
+            "bW8iLCJuYW1lIjoiSGVybmFuIExpZW5kbyIsImFwaSI6dHJ1ZSwiaWQiOiJ" +
+            "ISU9JMTVMUmJoaHh4S3hiNzBUTllnQUo5bGoxIiwiZXhwIjoxODQzOTI2MD" +
+            "gzLCJqdGkiOiJISU9JMTVMUmJoaHh4S3hiNzBUTllnQUo5bGoxIn0.DSzoC" +
+            "psS1p9NoYftDFu3CWeMpv_EtqwuHDYfyCzeHrvRFTtnQc1ve2eY9KlRY16LLEJ4feZCHPFIaghDleR2Vg"
+
         private val RTMP_SERVER_URL = "rtmp://localhost/live/myStream"
         private val loopLongWait = Duration.ofMillis(250)
 
@@ -124,7 +130,7 @@ class JibriPal {
                                                 .setUseEnhanced(true) //                        .setModel("phone_call")
                                                 //                        .setModel("command_and_search")
                                                 .setModel("latest_short")
-                                                .setSampleRateHertz(44000) //16000 22000 o 44000
+                                                .setSampleRateHertz(44000) // 16000 22000 o 44000
                                                 .build()
                                         )
                                         .setInterimResults(true)
@@ -241,21 +247,18 @@ class JibriPal {
                 .addHeader("chatPlatform", "WEBCHAT")
                 .addHeader(
                     "access-token",
-                    "eyJhbGciOiJIUzUxMiJ9.eyJidXNpbmVzc0lkIjoiYm90bWFrZXJ2b2ljZWRlbW8iLCJuYW1lIjoiSGVybmFuIExpZW5kbyIsImFwaSI6dHJ1ZSwiaWQiOiJISU9JMTVMUmJoaHh4S3hiNzBUTllnQUo5bGoxIiwiZXhwIjoxODQzOTI2MDgzLCJqdGkiOiJISU9JMTVMUmJoaHh4S3hiNzBUTllnQUo5bGoxIn0.DSzoCpsS1p9NoYftDFu3CWeMpv_EtqwuHDYfyCzeHrvRFTtnQc1ve2eY9KlRY16LLEJ4feZCHPFIaghDleR2Vg"
+                    ACCESS_TOKEN
                 )
                 .execute(object : AsyncCompletionHandler<Any>() {
                     override fun onCompleted(response: Response): Any {
                         try {
                             println("response [$response.responseBody]")
+
 //                            val payload = GSON.fromJson(response.responseBody, MutableMap::class.java)
-
 //                            val response1 = (payload["response"] as List<Map<String?, Any?>>?)!![0]
-
 //                            val audioURL =
 //                                ((response1["attachment"] as Map<String?, Any?>?)!!["payload"] as Map<String?, Any>?)!!["url"].toString()
-
 //                            println("audioURL [$audioURL]")
-
                         } catch (e: java.lang.Exception) {
                             e.printStackTrace()
                         }
@@ -287,17 +290,18 @@ class JibriPal {
 
             FileUtils.copyURLToFile(URL(url), f)
 
+            val command = "#!/bin/sh\n/usr/bin/ffmpeg -re -i " + f.absolutePath +
+                " -f s16le -ar 16000 -ac 1 - > /tmp/virtmic\n"
+
             FileUtils.write(
                 fsh,
-                "#!/bin/sh\n" +
-                        "/usr/bin/ffmpeg -re -i " + f.absolutePath + " -f s16le -ar 16000 -ac 1 - > /tmp/virtmic\n",
+                command,
                 StandardCharsets.UTF_8
             )
 
             executeCmd(arrayOf("chmod", "+x", fsh.getAbsolutePath()))
 
             executeCmd(arrayOf(fsh.getAbsolutePath()))
-
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
@@ -335,7 +339,6 @@ class JibriPal {
                 throw Exception("Invalid error code in command: $errCode. Output [$output] [$outputErr]")
 
             return StringUtils.trimToEmpty(output)
-
         } catch (e: Exception) {
             Exception("problems executing [" + java.lang.String.join(" ", *c) + "]: " + e.message, e).printStackTrace()
             throw RuntimeException(e)
