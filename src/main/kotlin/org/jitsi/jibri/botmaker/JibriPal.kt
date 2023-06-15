@@ -64,7 +64,7 @@ class JibriPal {
 //    private val transcription = StringBuffer(500)
 
     fun startService(languageCode: String) {
-        LoadBalancerRegistry.getDefaultRegistry().register(PickFirstLoadBalancerProvider());
+        LoadBalancerRegistry.getDefaultRegistry().register(PickFirstLoadBalancerProvider())
 
         println("pal STARTED")
 
