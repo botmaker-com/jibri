@@ -64,7 +64,7 @@ class JibriPal {
         LoadBalancerRegistry.getDefaultRegistry().register(PickFirstLoadBalancerProvider())
         Loader.load(avcodec::class.java)
 
-        // playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
+        playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
         val executorService = Executors.newFixedThreadPool(3)
 
         try {
@@ -211,13 +211,18 @@ class JibriPal {
         }
 
         override fun onResponse(response: StreamingRecognizeResponse?) {
+            if (response != null) {
+                println("*** [PAL] Transcription result " + response.resultsList)
+                println("*** [PAL] Transcription result " + response.resultsList.size)
+            }
+
             if (response == null || response.resultsList.isEmpty())
                 return
 
             val bestTranscript = response
                 .resultsList
                 .stream()
-                .filter { obj: StreamingRecognitionResult -> obj.isFinal }
+//                .filter { obj: StreamingRecognitionResult -> obj.isFinal }
                 .map { obj: StreamingRecognitionResult -> obj.alternativesList }
                 .flatMap { obj: List<SpeechRecognitionAlternative> -> obj.stream() }
                 .map { obj: SpeechRecognitionAlternative -> obj.transcript }
