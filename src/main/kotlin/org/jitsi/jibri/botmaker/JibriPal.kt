@@ -10,6 +10,8 @@ import com.google.cloud.speech.v1.StreamingRecognizeResponse
 import com.google.cloud.speech.v1.StreamingRecognitionResult
 import com.google.cloud.speech.v1.SpeechRecognitionAlternative
 import com.google.protobuf.ByteString
+import io.grpc.LoadBalancerRegistry
+import io.grpc.internal.PickFirstLoadBalancerProvider
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.StringUtils
@@ -62,7 +64,9 @@ class JibriPal {
 //    private val transcription = StringBuffer(500)
 
     fun startService(languageCode: String) {
-        println("STARTED")
+        LoadBalancerRegistry.getDefaultRegistry().register(PickFirstLoadBalancerProvider());
+
+        println("pal STARTED")
 
         Loader.load(avcodec::class.java)
 
@@ -73,17 +77,17 @@ class JibriPal {
             executorService.submit {
                 try {
                     inputContext = AVFormatContext(null)
-                    println("audioin 1")
+                    println("pal audioin 1")
                     val ret: Int = avformat.avformat_open_input(inputContext, RTMP_SERVER_URL, null, null)
-                    println("audioin 2")
+                    println("pal audioin 2")
                     if (ret < 0) {
                         throw java.lang.RuntimeException("Error opening input stream.")
                     }
-                    println("audioin 3")
+                    println("pal audioin 3")
                     val audioFormat = AudioFormat(44000.0f, 16, 1, true, false)
-                    println("audioin 4")
+                    println("pal audioin 4")
                     val info = DataLine.Info(SourceDataLine::class.java, audioFormat)
-                    println("audioin 5")
+                    println("pal audioin 5")
 
                     val sourceDataLine: SourceDataLine = AudioSystem.getLine(info) as SourceDataLine
                     sharedSourceDataLine = sourceDataLine
@@ -91,18 +95,18 @@ class JibriPal {
                     sourceDataLine.open(audioFormat)
                     sourceDataLine.start()
 
-                    println("audioin 6")
+                    println("pal audioin 6")
 
                     val pkt = AVPacket()
                     //                final byte[] buffer = new byte[4096];
-                    println("Listening audio started in [" + (System.currentTimeMillis() - startTime) + "]")
+                    println("pal Listening audio started in [" + (System.currentTimeMillis() - startTime) + "]")
                     while (keepWorking.get() && avformat.av_read_frame(inputContext, pkt) >= 0) {
                         val data = pkt.data()
                         val size = pkt.size()
                         val audioBuffer = data.position(0).limit(size.toLong()).asBuffer()
                         //                audioBuffer.get(buffer, 0, size);
                         pendingBytes.add(ByteString.copyFrom(audioBuffer))
-                        println("audioin bytes added")
+                        println("pal audioin bytes added")
 
 //                sourceDataLine.write(buffer, 0, size);
                         avcodec.av_packet_unref(pkt)
@@ -146,7 +150,7 @@ class JibriPal {
                                 // ok to ignore
                             }
                             if (audioBytes != null) {
-                                println("trans sent")
+                                println("pal trans sent")
                                 clientStream.send(
                                     StreamingRecognizeRequest.newBuilder().setAudioContent(audioBytes).build()
                                 )
@@ -178,7 +182,7 @@ class JibriPal {
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
-            println("working finished")
+            println("pal working finished")
         }
     }
 
@@ -217,7 +221,7 @@ class JibriPal {
         private var jibriPal: JibriPal = jp
 
         override fun onStart(controller: StreamController) {
-            println("Transcription started in [" + (System.currentTimeMillis() - jibriPal.startTime) + "]")
+            println("pal Transcription started in [" + (System.currentTimeMillis() - jibriPal.startTime) + "]")
         }
 
         override fun onResponse(response: StreamingRecognizeResponse?) {
@@ -235,7 +239,7 @@ class JibriPal {
                 .findFirst()
                 .orElse(null) ?: return
 
-            println("Transcript [$bestTranscript]")
+            println("pal Transcript [$bestTranscript]")
 //            transcription.append(bestTranscript)
 
             asyncHttpClient
@@ -252,7 +256,7 @@ class JibriPal {
                 .execute(object : AsyncCompletionHandler<Any>() {
                     override fun onCompleted(response: Response): Any {
                         try {
-                            println("response [$response.responseBody]")
+                            println("pal response [$response.responseBody]")
 
 //                            val payload = GSON.fromJson(response.responseBody, MutableMap::class.java)
 //                            val response1 = (payload["response"] as List<Map<String?, Any?>>?)!![0]
@@ -326,7 +330,7 @@ class JibriPal {
         var process: Process? = null
 
         try {
-            println("executing [" + java.lang.String.join(" ", *c) + "]")
+            println("pal executing [" + java.lang.String.join(" ", *c) + "]")
             val processBuilder = ProcessBuilder(*c)
 
             process = processBuilder.start()
