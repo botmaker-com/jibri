@@ -15,7 +15,6 @@ import io.grpc.internal.PickFirstLoadBalancerProvider
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.StringUtils
-import org.apache.commons.lang3.ThreadUtils
 import org.asynchttpclient.AsyncCompletionHandler
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
@@ -28,7 +27,6 @@ import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.time.Duration
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
@@ -48,8 +46,7 @@ class JibriPal {
             "gzLCJqdGkiOiJISU9JMTVMUmJoaHh4S3hiNzBUTllnQUo5bGoxIn0.DSzoC" +
             "psS1p9NoYftDFu3CWeMpv_EtqwuHDYfyCzeHrvRFTtnQc1ve2eY9KlRY16LLEJ4feZCHPFIaghDleR2Vg"
 
-        private val RTMP_SERVER_URL = "rtmp://localhost/live/myStream"
-        private val loopLongWait = Duration.ofMillis(250)
+        private val RTMP_SERVER_URL = "rtmp://172.17.0.3/live/myStream"
 
         //        private val GSON = Gson()
         private val asyncHttpClient = Dsl.asyncHttpClient()
@@ -71,6 +68,7 @@ class JibriPal {
         Loader.load(avcodec::class.java)
 
         playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
+        startListeningAudio()
         val executorService = Executors.newFixedThreadPool(2)
 
         try {
@@ -164,14 +162,14 @@ class JibriPal {
                 }
             }
 
-            // waiting till works
-            while (keepWorking.get()) {
-                try {
-                    ThreadUtils.sleep(loopLongWait)
-                } catch (interruptedException: InterruptedException) {
-                    // ok to ignore
-                }
-            }
+//             waiting till works
+//            while (keepWorking.get()) {
+//                try {
+//                    ThreadUtils.sleep(loopLongWait)
+//                } catch (interruptedException: InterruptedException) {
+//                    // ok to ignore
+//                }
+//            }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
             throw java.lang.RuntimeException(e)
@@ -316,6 +314,36 @@ class JibriPal {
                     e.printStackTrace()
                 }
             }
+            if (fsh != null) {
+                try {
+                    fsh.delete()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    private fun startListeningAudio() {
+        var fsh: File? = null
+
+        try {
+            fsh = File.createTempFile("script", ".sh")
+
+            val command = "#!/bin/sh\n/usr/bin/ffmpeg -f pulse -i default -f flv " + RTMP_SERVER_URL + " &\n"
+
+            FileUtils.write(
+                fsh,
+                command,
+                StandardCharsets.UTF_8
+            )
+
+            executeCmd(arrayOf("chmod", "+x", fsh.getAbsolutePath()))
+
+            executeCmd(arrayOf(fsh.getAbsolutePath()))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
             if (fsh != null) {
                 try {
                     fsh.delete()
