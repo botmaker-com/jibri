@@ -88,7 +88,7 @@ class JibriPal {
                         throw java.lang.RuntimeException("Error opening input stream.")
                     }
 
-                    val audioFormat = AudioFormat(44000.0f, 16, 1, true, false)
+                    val audioFormat = AudioFormat(16000.0f, 16, 1, true, false)
                     val info = DataLine.Info(SourceDataLine::class.java, audioFormat)
 
                     val sourceDataLine: SourceDataLine = AudioSystem.getLine(info) as SourceDataLine
@@ -134,7 +134,7 @@ class JibriPal {
                                                 .setUseEnhanced(true) //                        .setModel("phone_call")
                                                 //                        .setModel("command_and_search")
                                                 .setModel("latest_short")
-                                                .setSampleRateHertz(44000) // 16000 22000 o 44000
+                                                .setSampleRateHertz(16000) // 16000 22000 o 44000
                                                 .build()
                                         )
                                         .setInterimResults(true)
@@ -150,7 +150,7 @@ class JibriPal {
                                 // ok to ignore
                             }
                             if (audioBytes != null) {
-                                println("*** [PAL] GOOGLE sent")
+                                println("*** [PAL] sent")
                                 clientStream.send(
                                     StreamingRecognizeRequest.newBuilder().setAudioContent(audioBytes).build()
                                 )
@@ -170,7 +170,7 @@ class JibriPal {
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
-            println("*** [PAL] working finished")
+            println("*** [PAL] working finished **********************************************************")
         }
     }
 
