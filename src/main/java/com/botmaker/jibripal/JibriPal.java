@@ -64,6 +64,7 @@ public final class JibriPal {
 
     public void startService() {
         System.out.println("STARTED");
+        new Worker("en-US");
     }
 
     private static final class Worker {
@@ -83,7 +84,7 @@ public final class JibriPal {
         Worker(final String languageCode) {
             Loader.load(org.bytedeco.ffmpeg.global.avcodec.class);
 
-//        playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3");
+            playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3");
             final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
             try {
