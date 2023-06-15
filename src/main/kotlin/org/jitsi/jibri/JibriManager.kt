@@ -17,7 +17,7 @@
 
 package org.jitsi.jibri
 
-import com.botmaker.jibripal.JibriPal
+import org.jitsi.jibri.botmaker.JibriPal
 import org.jitsi.jibri.config.Config
 import org.jitsi.jibri.config.XmppCredentials
 import org.jitsi.jibri.health.EnvironmentContext

@@ -1,4 +1,4 @@
-package com.botmaker.jibripal
+package org.jitsi.jibri.botmaker
 
 import com.google.api.gax.rpc.ResponseObserver
 import com.google.api.gax.rpc.StreamController
