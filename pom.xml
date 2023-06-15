@@ -25,8 +25,59 @@
         <jitsi.utils.version>1.0-119-ga7b23ff</jitsi.utils.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>26.16.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-       <dependency>
+
+        <!-- ======================= BOTMAKER START ======================= -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-speech</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.12.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacpp</artifactId>
+            <version>1.5.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>ffmpeg-platform</artifactId>
+            <version>6.0-1.5.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>3.0.0.Beta2</version>
+        </dependency>
+
+        <!-- ======================= BOTMAKER END ======================= -->
+
+        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
             <version>1.70</version>
@@ -251,8 +302,8 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                  <groupId>io.ktor</groupId>
-                  <artifactId>ktor-client-jetty-jvm</artifactId>
+                    <groupId>io.ktor</groupId>
+                    <artifactId>ktor-client-jetty-jvm</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -280,26 +331,26 @@
 
     <build>
         <plugins>
-	    <plugin>
-		<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-enforcer-plugin</artifactId>
-		<version>3.0.0-M3</version>
-		<executions>
-		    <execution>
-			<id>enforce-maven</id>
-			<goals>
-			    <goal>enforce</goal>
-			</goals>
-			<configuration>
-			    <rules>
-				<requireMavenVersion>
-				    <version>3.5.0</version>
-				</requireMavenVersion>
-			    </rules>
-			</configuration>
-		    </execution>
-		</executions>
-	    </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.5.0</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -307,7 +358,9 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <goals> <goal>compile</goal> </goals>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
@@ -322,7 +375,9 @@
                     </execution>
                     <execution>
                         <id>test-compile</id>
-                        <goals> <goal>test-compile</goal> </goals>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
@@ -349,12 +404,16 @@
                     <execution>
                         <id>java-compile</id>
                         <phase>compile</phase>
-                        <goals> <goal>compile</goal> </goals>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
                     </execution>
                     <execution>
                         <id>java-test-compile</id>
                         <phase>test-compile</phase>
-                        <goals> <goal>testCompile</goal> </goals>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -367,7 +426,8 @@
                         <!-- gradle.build.dir is the property name that JunitXmlReporter expects to find, even though
                         this is maven -->
                         <gradle.build.dir>${project.build.directory}/surefire-reports</gradle.build.dir>
-                        <java.util.logging.config.file>${project.basedir}/lib/test-logging.properties</java.util.logging.config.file>
+                        <java.util.logging.config.file>${project.basedir}/lib/test-logging.properties
+                        </java.util.logging.config.file>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -379,7 +439,9 @@
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals> <goal>single</goal> </goals>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                         <configuration>
                             <archive>
                                 <manifest>

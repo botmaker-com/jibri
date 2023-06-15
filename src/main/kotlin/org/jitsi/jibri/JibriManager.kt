@@ -17,6 +17,7 @@
 
 package org.jitsi.jibri
 
+import com.botmaker.jibripal.JibriPal
 import org.jitsi.jibri.config.Config
 import org.jitsi.jibri.config.XmppCredentials
 import org.jitsi.jibri.health.EnvironmentContext
@@ -144,6 +145,9 @@ class JibriManager : StatusPublisher<Any>() {
     ) {
         throwIfBusy()
         logger.info("Starting a file recording with params: $fileRecordingRequestParams")
+
+        JibriPal.instance().startService();
+
         val service = FileRecordingJibriService(
             FileRecordingParams(
                 fileRecordingRequestParams.callParams,
