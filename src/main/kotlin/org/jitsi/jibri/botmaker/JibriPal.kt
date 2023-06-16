@@ -11,7 +11,7 @@ class JibriPal {
         try {
             println("*** [PAL] startService: $languageCode")
 
-            val url = "http://" + System.getenv("RTMP_IP") + "/rest/start?l=" + URLEncoder.encode(
+            val url = "http://" + System.getenv("RTMP_IP") + "/new?l=" + URLEncoder.encode(
                 languageCode,
                 StandardCharsets.UTF_8
             )
