@@ -279,6 +279,14 @@
     </dependencies>
 
     <build>
+        <extensions>
+            <extension>
+                <groupId>com.google.cloud.artifactregistry</groupId>
+                <artifactId>artifactregistry-maven-wagon</artifactId>
+                <version>2.1.1</version>
+            </extension>
+        </extensions>
+
         <plugins>
 	    <plugin>
 		<groupId>org.apache.maven.plugins</groupId>
@@ -457,7 +465,28 @@
             </snapshots>
             <url>https://github.com/jitsi/jitsi-maven-repository/raw/master/snapshots/</url>
         </repository>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://us-west1-maven.pkg.dev/m-infra/botmaker-maven-repository</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://us-west1-maven.pkg.dev/m-infra/botmaker-maven-repository</url>
+        </snapshotRepository>
+        <repository>
+            <id>artifact-registry</id>
+            <url>artifactregistry://us-west1-maven.pkg.dev/m-infra/botmaker-maven-repository</url>
+        </repository>
+    </distributionManagement>
 
     <profiles>
         <profile>
