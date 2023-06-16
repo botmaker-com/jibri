@@ -26,7 +26,7 @@
     </properties>
 
     <dependencies>
-       <dependency>
+        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
             <version>1.70</version>
@@ -251,8 +251,8 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                  <groupId>io.ktor</groupId>
-                  <artifactId>ktor-client-jetty-jvm</artifactId>
+                    <groupId>io.ktor</groupId>
+                    <artifactId>ktor-client-jetty-jvm</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -288,26 +288,26 @@
         </extensions>
 
         <plugins>
-	    <plugin>
-		<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-enforcer-plugin</artifactId>
-		<version>3.0.0-M3</version>
-		<executions>
-		    <execution>
-			<id>enforce-maven</id>
-			<goals>
-			    <goal>enforce</goal>
-			</goals>
-			<configuration>
-			    <rules>
-				<requireMavenVersion>
-				    <version>3.5.0</version>
-				</requireMavenVersion>
-			    </rules>
-			</configuration>
-		    </execution>
-		</executions>
-	    </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.5.0</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -315,7 +315,9 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <goals> <goal>compile</goal> </goals>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
@@ -330,7 +332,9 @@
                     </execution>
                     <execution>
                         <id>test-compile</id>
-                        <goals> <goal>test-compile</goal> </goals>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
@@ -357,12 +361,16 @@
                     <execution>
                         <id>java-compile</id>
                         <phase>compile</phase>
-                        <goals> <goal>compile</goal> </goals>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
                     </execution>
                     <execution>
                         <id>java-test-compile</id>
                         <phase>test-compile</phase>
-                        <goals> <goal>testCompile</goal> </goals>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -375,7 +383,8 @@
                         <!-- gradle.build.dir is the property name that JunitXmlReporter expects to find, even though
                         this is maven -->
                         <gradle.build.dir>${project.build.directory}/surefire-reports</gradle.build.dir>
-                        <java.util.logging.config.file>${project.basedir}/lib/test-logging.properties</java.util.logging.config.file>
+                        <java.util.logging.config.file>${project.basedir}/lib/test-logging.properties
+                        </java.util.logging.config.file>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -387,7 +396,9 @@
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals> <goal>single</goal> </goals>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                         <configuration>
                             <archive>
                                 <manifest>
@@ -397,6 +408,7 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
+                            <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
                 </executions>
