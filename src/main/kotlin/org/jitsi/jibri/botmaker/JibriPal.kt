@@ -46,7 +46,7 @@ class JibriPal {
             "gzLCJqdGkiOiJISU9JMTVMUmJoaHh4S3hiNzBUTllnQUo5bGoxIn0.DSzoC" +
             "psS1p9NoYftDFu3CWeMpv_EtqwuHDYfyCzeHrvRFTtnQc1ve2eY9KlRY16LLEJ4feZCHPFIaghDleR2Vg"
 
-        private val RTMP_SERVER_URL = "rtmp://172.17.0.3/live/myStream"
+        private val RTMP_SERVER_URL = "rtmp://RTMP_IP/live/myStream"
 
         //        private val GSON = Gson()
         private val asyncHttpClient = Dsl.asyncHttpClient()
@@ -61,118 +61,122 @@ class JibriPal {
 //    private val transcription = StringBuffer(500)
 
     fun startService(languageCode: String) {
-        LoadBalancerRegistry.getDefaultRegistry().register(PickFirstLoadBalancerProvider())
-        Loader.load(avcodec::class.java)
-
-        playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
-        val executorService = Executors.newFixedThreadPool(3)
-
-        try {
-            executorService.submit {
-                try {
-                    startListeningAudio()
-                    println("*** [PAL] startListeningAudio done")
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
-                    keepWorking.set(false)
-                }
-            }
-
-            executorService.submit {
-                try {
-                    inputContext = AVFormatContext(null)
-
-                    val ret: Int = avformat.avformat_open_input(inputContext, RTMP_SERVER_URL, null, null)
-
-                    if (ret < 0) {
-                        throw java.lang.RuntimeException("Error opening input stream.")
-                    }
-
-                    val audioFormat = AudioFormat(16000.0f, 16, 1, true, false)
-                    val info = DataLine.Info(SourceDataLine::class.java, audioFormat)
-
-                    val sourceDataLine: SourceDataLine = AudioSystem.getLine(info) as SourceDataLine
-                    sharedSourceDataLine = sourceDataLine
-
-                    sourceDataLine.open(audioFormat)
-                    sourceDataLine.start()
-
-                    val pkt = AVPacket()
-                    //                final byte[] buffer = new byte[4096];
-                    println("*** [PAL] Listening audio started")
-
-                    while (keepWorking.get() && avformat.av_read_frame(inputContext, pkt) >= 0) {
-                        val data = pkt.data()
-                        val size = pkt.size()
-                        val audioBuffer = data.position(0).limit(size.toLong()).asBuffer()
-                        //                audioBuffer.get(buffer, 0, size);
-                        pendingBytes.add(ByteString.copyFrom(audioBuffer))
-
-//                sourceDataLine.write(buffer, 0, size);
-                        avcodec.av_packet_unref(pkt)
-                    }
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
-                    keepWorking.set(false)
-                }
-            }
-            executorService.submit {
-                try {
-                    SpeechClient.create().use { client ->
-                        val clientStream = client
-                            .streamingRecognizeCallable()
-                            .splitCall(TranscriptionObserver())
-
-                        clientStream.send(
-                            StreamingRecognizeRequest.newBuilder()
-                                .setStreamingConfig(
-                                    StreamingRecognitionConfig.newBuilder()
-                                        .setConfig(
-                                            RecognitionConfig.newBuilder()
-                                                .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
-                                                .setLanguageCode(languageCode)
-                                                .setUseEnhanced(true) //                        .setModel("phone_call")
-                                                //                        .setModel("command_and_search")
-                                                .setModel("latest_short")
-                                                .setSampleRateHertz(16000) // 16000 22000 o 44000
-                                                .build()
-                                        )
-                                        .setInterimResults(true)
-                                        .build()
-                                )
-                                .build()
-                        )
-                        var audioBytes: ByteString? = null
-                        while (keepWorking.get()) {
-                            try {
-                                audioBytes = pendingBytes.poll(500, TimeUnit.MILLISECONDS)
-                            } catch (interruptedException: InterruptedException) {
-                                // ok to ignore
-                            }
-                            if (audioBytes != null) {
-                                println("*** [PAL] sent")
-                                clientStream.send(
-                                    StreamingRecognizeRequest.newBuilder().setAudioContent(audioBytes).build()
-                                )
-                            }
-                        }
-                        clientStream.closeSend()
-                    }
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
-                    keepWorking.set(false)
-                }
-            }
-        } finally {
-            stopWorking()
-            try {
-                executorService.shutdown()
-            } catch (e: java.lang.Exception) {
-                e.printStackTrace()
-            }
-            println("*** [PAL] working finished **********************************************************")
-        }
+        println("*** [PAL] startService: " + languageCode)
     }
+
+//    fun startService(languageCode: String) {
+//        LoadBalancerRegistry.getDefaultRegistry().register(PickFirstLoadBalancerProvider())
+//        Loader.load(avcodec::class.java)
+//
+//        playAudioUrl("https://storage.googleapis.com/botmaker-website/site/Canales/welcome.mp3")
+//        val executorService = Executors.newFixedThreadPool(3)
+//
+//        try {
+//            executorService.submit {
+//                try {
+//                    startListeningAudio()
+//                    println("*** [PAL] startListeningAudio done")
+//                } catch (e: java.lang.Exception) {
+//                    e.printStackTrace()
+//                    keepWorking.set(false)
+//                }
+//            }
+//
+//            executorService.submit {
+//                try {
+//                    inputContext = AVFormatContext(null)
+//
+//                    val ret: Int = avformat.avformat_open_input(inputContext, RTMP_SERVER_URL, null, null)
+//
+//                    if (ret < 0) {
+//                        throw java.lang.RuntimeException("Error opening input stream.")
+//                    }
+//
+//                    val audioFormat = AudioFormat(16000.0f, 16, 1, true, false)
+//                    val info = DataLine.Info(SourceDataLine::class.java, audioFormat)
+//
+//                    val sourceDataLine: SourceDataLine = AudioSystem.getLine(info) as SourceDataLine
+//                    sharedSourceDataLine = sourceDataLine
+//
+//                    sourceDataLine.open(audioFormat)
+//                    sourceDataLine.start()
+//
+//                    val pkt = AVPacket()
+//                    //                final byte[] buffer = new byte[4096];
+//                    println("*** [PAL] Listening audio started")
+//
+//                    while (keepWorking.get() && avformat.av_read_frame(inputContext, pkt) >= 0) {
+//                        val data = pkt.data()
+//                        val size = pkt.size()
+//                        val audioBuffer = data.position(0).limit(size.toLong()).asBuffer()
+//                        //                audioBuffer.get(buffer, 0, size);
+//                        pendingBytes.add(ByteString.copyFrom(audioBuffer))
+//
+////                sourceDataLine.write(buffer, 0, size);
+//                        avcodec.av_packet_unref(pkt)
+//                    }
+//                } catch (e: java.lang.Exception) {
+//                    e.printStackTrace()
+//                    keepWorking.set(false)
+//                }
+//            }
+//            executorService.submit {
+//                try {
+//                    SpeechClient.create().use { client ->
+//                        val clientStream = client
+//                            .streamingRecognizeCallable()
+//                            .splitCall(TranscriptionObserver())
+//
+//                        clientStream.send(
+//                            StreamingRecognizeRequest.newBuilder()
+//                                .setStreamingConfig(
+//                                    StreamingRecognitionConfig.newBuilder()
+//                                        .setConfig(
+//                                            RecognitionConfig.newBuilder()
+//                                                .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
+//                                                .setLanguageCode(languageCode)
+//                                                .setUseEnhanced(true) //                        .setModel("phone_call")
+//                                                //                        .setModel("command_and_search")
+////                                                .setModel("latest_short")
+//                                                .setSampleRateHertz(16000) // 16000 22000 o 44000
+//                                                .build()
+//                                        )
+//                                        .setInterimResults(true)
+//                                        .build()
+//                                )
+//                                .build()
+//                        )
+//                        var audioBytes: ByteString? = null
+//                        while (keepWorking.get()) {
+//                            try {
+//                                audioBytes = pendingBytes.poll(500, TimeUnit.MILLISECONDS)
+//                            } catch (interruptedException: InterruptedException) {
+//                                // ok to ignore
+//                            }
+//                            if (audioBytes != null) {
+//                                println("*** [PAL] sent")
+//                                clientStream.send(
+//                                    StreamingRecognizeRequest.newBuilder().setAudioContent(audioBytes).build()
+//                                )
+//                            }
+//                        }
+//                        clientStream.closeSend()
+//                    }
+//                } catch (e: java.lang.Exception) {
+//                    e.printStackTrace()
+//                    keepWorking.set(false)
+//                }
+//            }
+//        } finally {
+//            stopWorking()
+//            try {
+//                executorService.shutdown()
+//            } catch (e: java.lang.Exception) {
+//                e.printStackTrace()
+//            }
+//            println("*** [PAL] working finished **********************************************************")
+//        }
+//    }
 
 //    fun endWork() {
 //        keepWorking.set(false)
