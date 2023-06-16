@@ -2,6 +2,11 @@
 
 JItsi BRoadcasting Infrastructure
 
+# Botmaker notes
+
+* to deploy run `mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dcheckstyle.skip clean deploy`
+* then go to nfra-and-serverless/kubernetes/jitsi/legacy en follow instructions
+
 # What is Jibri
 
 Jibri provides services for recording or streaming a Jitsi Meet conference.
