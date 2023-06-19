@@ -10,8 +10,9 @@ class JibriPal {
     fun startService(languageCode: String) {
         try {
             println("*** [PAL] startService: $languageCode")
+            // System.getenv("RTMP_IP")
 
-            val url = "http://" + System.getenv("RTMP_IP") + ":8080/new?l=" + URLEncoder.encode(
+            val url = "http://localhost:8080/new?l=" + URLEncoder.encode(
                 languageCode,
                 StandardCharsets.UTF_8
             )
@@ -21,12 +22,15 @@ class JibriPal {
             val httpClientBuilder = HttpClientBuilder.create()
 
             httpClientBuilder.build().use { closeableHttpClient ->
+                println("*** [PAL] startService url: [$url]")
+
                 val response = closeableHttpClient.execute(method)
                 if (response.statusLine.statusCode != 200) {
                     throw RuntimeException(
                         "request failed for [" + response.statusLine.statusCode + "]"
                     )
                 }
+                println("*** [PAL] startService ok")
             }
         } catch (e: Exception) {
             e.printStackTrace()
