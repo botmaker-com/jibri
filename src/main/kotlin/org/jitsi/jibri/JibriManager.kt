@@ -270,6 +270,9 @@ class JibriManager : StatusPublisher<Any>() {
         }
         statsDClient?.incrementCounter(ASPECT_STOP, JibriStatsDClient.getTagForService(currentService))
         logger.info("Stopping the current service")
+
+        JibriPal().stopService("en-US")
+
         serviceTimeoutTask?.cancel(false)
         // Note that this will block until the service is completely stopped
         currentService.stop()

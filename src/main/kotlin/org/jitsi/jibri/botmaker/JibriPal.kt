@@ -37,4 +37,35 @@ class JibriPal {
             println("*** [PAL] startService: $e")
         }
     }
+
+    fun stopService(languageCode: String) {
+        try {
+            println("*** [PAL] stopService: $languageCode")
+            // System.getenv("RTMP_IP")
+
+            val url = "http://localhost:8080/stop?l=" + URLEncoder.encode(
+                languageCode,
+                StandardCharsets.UTF_8
+            )
+
+            val method = HttpGet(url)
+
+            val httpClientBuilder = HttpClientBuilder.create()
+
+            httpClientBuilder.build().use { closeableHttpClient ->
+                println("*** [PAL] stopService url: [$url]")
+
+                val response = closeableHttpClient.execute(method)
+                if (response.statusLine.statusCode != 200) {
+                    throw RuntimeException(
+                        "request failed for [" + response.statusLine.statusCode + "]"
+                    )
+                }
+                println("*** [PAL] stopService ok")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("*** [PAL] stopService: $e")
+        }
+    }
 }
