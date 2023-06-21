@@ -11,12 +11,12 @@ class JibriPal {
     private val logger = createLogger()
 
     fun startService(callName: String) {
-        impl(callName, true);
+        impl(callName, true)
     }
 
     fun stopService(callPath: String) {
         // callPath example [/config/recordings/wkstzgnpuotsikpf]
-        impl(callPath, false);
+        impl(callPath, false)
     }
 
     fun impl(param: String, start: Boolean) {
@@ -24,9 +24,9 @@ class JibriPal {
             logger.info("*** [PAL] calling pal service start:[$start] param:[$param]")
 
             val v: String = if (start)
-                "new";
+                "new"
             else
-                "stop";
+                "stop"
 
             val method = HttpGet(
                 "http://localhost:8080/" + v + "?id=" + URLEncoder.encode(
@@ -46,7 +46,7 @@ class JibriPal {
                 logger.info("*** [PAL] calling pal service OK:[$start] param:[$param]")
             }
         } catch (e: Exception) {
-            logger.error(e);
+            logger.error(e)
             logger.error("*** [PAL] service error:[$start] param:[$param]: $e")
         }
     }
