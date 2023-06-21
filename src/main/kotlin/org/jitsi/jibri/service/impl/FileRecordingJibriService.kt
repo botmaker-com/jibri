@@ -35,7 +35,6 @@ import org.jitsi.jibri.sink.Sink
 import org.jitsi.jibri.sink.impl.FileSink
 import org.jitsi.jibri.status.ComponentState
 import org.jitsi.jibri.status.ErrorScope
-import org.jitsi.jibri.util.ProcessFactory
 import org.jitsi.jibri.util.createIfDoesNotExist
 import org.jitsi.jibri.util.whenever
 import org.jitsi.metaconfig.config
@@ -97,7 +96,7 @@ class FileRecordingJibriService(
     private val fileRecordingParams: FileRecordingParams,
     jibriSelenium: JibriSelenium? = null,
     capturer: FfmpegCapturer? = null,
-    processFactory: ProcessFactory = ProcessFactory(),
+    // processFactory: ProcessFactory = ProcessFactory(),
     fileSystem: FileSystem = FileSystems.getDefault(),
     private var jibriServiceFinalizer: JibriServiceFinalizer? = null
 ) : StatefulJibriService("File recording") {
@@ -141,11 +140,7 @@ class FileRecordingJibriService(
         registerSubComponent(FfmpegCapturer.COMPONENT_ID, this.capturer)
 
         jibriServiceFinalizer = JibriServiceFinalizeCommandRunner(
-            processFactory,
-            listOf(
-                finalizeScriptPath,
-                sessionRecordingDirectory.toString()
-            )
+            sessionRecordingDirectory.toString()
         )
     }
 

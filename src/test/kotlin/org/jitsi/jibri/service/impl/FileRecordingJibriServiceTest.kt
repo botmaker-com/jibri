@@ -81,7 +81,7 @@ internal class FileRecordingJibriServiceTest : ShouldSpec() {
         fileRecordingParams,
         seleniumMockHelper.mock,
         capturerMockHelper.mock,
-        processFactory,
+        // processFactory,
         fs
     ).also {
         it.addStatusHandler(statusUpdates::add)

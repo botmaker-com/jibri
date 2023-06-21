@@ -72,7 +72,7 @@ internal class SipGatewayJibriServiceTest : ShouldSpec() {
             sipGatewayServiceParams,
             seleniumMockHelper.mock,
             pjsuaClientMockHelper.mock,
-            processFactory
+            // processFactory
         ).also {
             it.addStatusHandler(statusUpdates::add)
         }

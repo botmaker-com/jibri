@@ -16,19 +16,15 @@
 
 package org.jitsi.jibri.service.impl
 
+import org.jitsi.jibri.botmaker.JibriPal
 import org.jitsi.jibri.service.JibriServiceFinalizer
-import org.jitsi.jibri.util.LoggingUtils
-import org.jitsi.jibri.util.ProcessFactory
-import org.jitsi.utils.logging2.createLogger
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 class JibriServiceFinalizeCommandRunner(
-    private val processFactory: ProcessFactory = ProcessFactory(),
-    private val finalizeCommand: List<String>
+//    private val processFactory: ProcessFactory = ProcessFactory(),
+    private val sessionRecordingDirectory: String
 ) : JibriServiceFinalizer {
 
-    private val logger = createLogger()
+//    private val logger = createLogger()
 
     /**
      * Helper to execute the finalize script and wait for its completion.
@@ -36,31 +32,27 @@ class JibriServiceFinalizeCommandRunner(
      * to complete (by design)
      */
     override fun doFinalize() {
-        if (finalizeCommand.isEmpty()) {
-            logger.debug("Finalize command is empty, there is nothing to be run")
-            return
-        }
+//        try {
+        JibriPal().stopService(sessionRecordingDirectory)
 
-        logger.info("Finalizing the jibri service operation using command $finalizeCommand")
-        try {
-            with(processFactory.createProcess(finalizeCommand, logger)) {
-                start()
-                val streamDone = LoggingUtils.logOutputOfProcess(this, logger)
-                waitFor()
-                // Make sure we get all the logs
-                try {
-                    streamDone.get(10, TimeUnit.SECONDS)
-                } catch (e: TimeoutException) {
-                    logger.error("Timed out waiting for process logger task to complete")
-                    streamDone.cancel(true)
-                } catch (e: Exception) {
-                    logger.error("Exception while waiting for process logger task to complete", e)
-                    streamDone.cancel(true)
-                }
-                logger.info("Finalize script finished with exit value $exitValue")
-            }
-        } catch (e: Exception) {
-            logger.error("Failed to run finalize script", e)
-        }
+//            with(processFactory.createProcess(finalizeCommand, logger)) {
+//                start()
+//                val streamDone = LoggingUtils.logOutputOfProcess(this, logger)
+//                waitFor()
+//                // Make sure we get all the logs
+//                try {
+//                    streamDone.get(10, TimeUnit.SECONDS)
+//                } catch (e: TimeoutException) {
+//                    logger.error("Timed out waiting for process logger task to complete")
+//                    streamDone.cancel(true)
+//                } catch (e: Exception) {
+//                    logger.error("Exception while waiting for process logger task to complete", e)
+//                    streamDone.cancel(true)
+//                }
+//                logger.info("Finalize script finished with exit value $exitValue")
+//            }
+//        } catch (e: Exception) {
+//            logger.error("Failed to run finalize script", e)
+//        }
     }
 }
