@@ -24,7 +24,7 @@ class JibriPal {
             logger.info("*** [PAL] calling pal service start:[$start] param:[$param]")
 
             val v: String = if (start)
-                "new"
+                "start"
             else
                 "stop"
 
